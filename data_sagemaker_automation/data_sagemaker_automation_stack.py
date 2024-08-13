@@ -17,15 +17,15 @@ class DataSagemakerAutomationStack(Stack):
             function_name="LambdaImageSagemakerFeatures",
             # add enviroment variable : AmazonSageMaker-ExecutionRole-20240318T120107
             environment={
-                "SAGEMAKER_EXECUTION_ROLE": "arn:aws:iam::812419731335:role/DataSagemakerAutomationSt-LambdaSagemakerServiceRol-hcAPvFVbvO0s"
+                "SAGEMAKER_EXECUTION_ROLE": "arn:aws:iam::812419731335:role/DataSagemakerAutomationSt-LambdaSagemakerFeaturesSe-hBeHmatTt7N1"
             },
             code=_lambda.DockerImageCode.from_image_asset(
                 directory="lambda_docker/LambdaSagemaker",
             ),
             timeout=Duration.seconds(120),
             memory_size=512,
-            architecture=_lambda.Architecture.ARM_64,
-            description="A lambda function that can start a sagemaker inference pipeline",
+            # architecture=_lambda.Architecture.ARM_64,
+            description="A lambda function that can start a sagemaker pipeline",
         )
 
         sagemaker_inference_lambda.add_to_role_policy(

@@ -26,11 +26,13 @@ logger.addHandler(logging.StreamHandler())
 label_column = "target"
 label_column_dtype = {"target": int}
 
+
 def merge_two_dicts(x, y):
     """Merges two dicts, returning a new copy."""
     z = x.copy()
     z.update(y)
     return z
+
 
 if __name__ == "__main__":
     logger.debug("Starting preprocessing.")
@@ -48,18 +50,17 @@ if __name__ == "__main__":
     bucket_train = train_data.split("/")[2]
     bucket_and_key_train = train_data.replace("s3://", "", 1)
     bucket_name_train, key_train = bucket_and_key_train.split('/', 1)
-    logger.info("Downloading data from bucket: %s, key: %s, bucket_name: %s", bucket_train, key_train, bucket_name_train)
+    logger.info("Downloading data from bucket: %s, key: %s, bucket_name: %s",
+                bucket_train, key_train, bucket_name_train)
     fn_train = f"{base_dir}/data/train-dataset.csv"
-
 
     bucket_test = test_data.split("/")[2]
     bucket_and_key_test = test_data.replace("s3://", "", 1)
     bucket_name_test, key_test = bucket_and_key_test.split('/', 1)
-    logger.info("Downloading data from bucket: %s, key: %s, bucket_name: %s", bucket_test, key_test, bucket_name_test)
+    logger.info("Downloading data from bucket: %s, key: %s, bucket_name: %s",
+                bucket_test, key_test, bucket_name_test)
     fn_test = f"{base_dir}/data/test-dataset.csv"
 
-
-    
     s3 = boto3.resource("s3")
     s3.Bucket(bucket_test).download_file(key_train, fn_train)
     s3.Bucket(bucket_test).download_file(key_test, fn_test)
@@ -67,11 +68,8 @@ if __name__ == "__main__":
     df_train = pd.read_csv(fn_train)
     df_test = pd.read_csv(fn_test)
 
-
     os.unlink(fn_train)
     os.unlink(fn_test)
-
-
 
     logger.debug("Defining transformers.")
     logger.info("Applying transforms.")
@@ -82,7 +80,7 @@ if __name__ == "__main__":
     df_test = df_test.drop(['identifier'], axis=1)
     y_train = df_train.pop("target")
     y_test = df_test.pop("target")
-    
+
     logger.info(f"df columns {df_train.columns}")
     logger.info(f"df columns {df_test.columns}")
     print(f"df columns {df_train.columns}")
@@ -95,12 +93,16 @@ if __name__ == "__main__":
     y_pre_test = y_test.to_numpy()
 
     # Splitting the data into train, validation, and test sets
-    logger.info("Splitting %d rows of data into train, validation, test datasets.", len(X_pre))
+    logger.info("Total Train Data: %d", len(X_train))
+
+    logger.info(
+        "Splitting %d rows of data into validation, test datasets.", len(X_pre_test))
     # First split: 90% for training and 10% for the temporary set (which will be split into validation and test)
     # X_train, X_temp, y_train, y_temp = train_test_split(X_pre, y_pre, test_size=0.2, stratify=y_pre, random_state=42)
 
     # Second split: Split the temporary set into validation and test sets (50% each of the 20% temp set, thus 10% each of the original dataset)
-    X_val, X_test, y_val, y_test = train_test_split(X_pre_test, y_pre_test, test_size=0.5, stratify=y_pre_test, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(
+        X_pre_test, y_pre_test, test_size=0.5, stratify=y_pre_test, random_state=42)
 
     # Concatenate the features and labels for each dataset
     train = np.concatenate((y_train.reshape(-1, 1), X_train), axis=1)
@@ -108,9 +110,12 @@ if __name__ == "__main__":
     test = np.concatenate((y_test.reshape(-1, 1), X_test), axis=1)
 
     logger.info("Writing out datasets to %s.", base_dir)
-    pd.DataFrame(train).to_csv(f"{base_dir}/train/train.csv", header=False, index=False)
-    pd.DataFrame(validation).to_csv(f"{base_dir}/validation/validation.csv", header=False, index=False)
-    pd.DataFrame(test).to_csv(f"{base_dir}/test/test.csv", header=False, index=False)
+    pd.DataFrame(train).to_csv(
+        f"{base_dir}/train/train.csv", header=False, index=False)
+    pd.DataFrame(validation).to_csv(
+        f"{base_dir}/validation/validation.csv", header=False, index=False)
+    pd.DataFrame(test).to_csv(
+        f"{base_dir}/test/test.csv", header=False, index=False)
 
     # Extract column names
     column_names = df_train.columns.tolist()
@@ -124,15 +129,17 @@ if __name__ == "__main__":
     # Create the directory if it does not exist
     os.makedirs(directory, exist_ok=True)
 
-
     # Create a mapping for the test set
-    _, test_idx, _, _ = train_test_split(range(len(X_pre_test)), range(len(y_pre_test)), test_size=0.5, stratify=y_pre_test, random_state=42)
+    _, test_idx, _, _ = train_test_split(range(len(X_pre_test)), range(
+        len(y_pre_test)), test_size=0.5, stratify=y_pre_test, random_state=42)
 
-    test_customer_campaign_mapping = pd.DataFrame({'identifier': customer_ids[test_idx]})
+    test_customer_campaign_mapping = pd.DataFrame(
+        {'identifier': customer_ids[test_idx]})
 
     # You can now save this mapping or use it as needed
     # For example, to save:
-    test_customer_campaign_mapping.to_csv(f"{base_dir}/data/test_customer_campaign_mapping.csv", index=False)
+    test_customer_campaign_mapping.to_csv(
+        f"{base_dir}/data/test_customer_campaign_mapping.csv", index=False)
     # Write to a JSON file
     with open(f"{base_dir}/features/feature_names.json", 'w') as file:
         file.write(json_data)
