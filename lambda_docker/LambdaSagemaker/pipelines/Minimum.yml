@@ -1,0 +1,53 @@
+Minimum 
+
+- Which Image do we want to run 
+- Which Data do we want to run 
+- Which Code do we want to run 
+
+
+- pass a name for the pipeline
+- pass image
+    - processing image
+    - training image
+    - transform image
+- pass hyperparameter
+    - default
+    - tuning ranges
+- pass evaluation 
+    - metrics 
+        - confusion
+        - f1, acc
+        - auc
+        - storage for results s3
+-  pass conditions 
+    - thresholds
+- pass data
+    - training s3
+    - inference s3
+- pass source files
+    - evaluate.py
+    - preprocessing.py
+
+
+executing: 
+
+pipeline_configuration = {
+    "model_family": "xgboost",
+    "image_processing": "string",
+    "image_training": "string",
+    "image_transform": "string",
+    "hyperparameter_default": {},
+    "hyperparameter_tuning": {},
+    "evaluation": ["f1", "acc", "auc", "cm", "fi"],
+    "condition_threshold_metric": "f1",
+    "condition_threshold_type": "greaterthan",
+    "condition_threshold_value": 0.66,
+    "input_training_dataset": "s3://",
+    "evaluation_file": "s3://",
+    "preprocessing_file": "s3://",
+}
+
+# Lambda / Fargate what ever ... 
+
+pipeline_configuration = load_from_s3("s3://dummybucket/pipeline_configuration.json") 
+start_pipeline_execution(pipeline_configuration)
